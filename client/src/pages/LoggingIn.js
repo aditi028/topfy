@@ -1,0 +1,59 @@
+import { useEffect, useState } from "react";
+
+function LoggingIn() {
+
+    const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+
+    useEffect(()=>{
+        console.log('i fire once');
+        !isUserSignedIn? Login() : uploadBanner()
+    },[isUserSignedIn])
+
+    async function Login(){
+        let search = window.location.search;     
+        let params = new URLSearchParams(search);   
+        const response = await fetch('http://localhost:1337/api/callback',{
+        method: 'POST',
+        headers:{
+            'Content-Type': 'application/json', //to send data as json
+        },
+        body: JSON.stringify({
+            token: params.get('oauth_token'),
+            verifier: params.get('oauth_verifier')
+        }),
+        })
+        const data = await response.json() //note
+        //this check is required.
+        if(data.status=='ok'){
+            setIsUserSignedIn(true);
+        }
+        else{
+            window.alert('please sign in!')
+        }
+    } 
+
+    async function uploadBanner(){
+        const response = await fetch('http://localhost:1337/api/uploadBanner',{
+        method: 'POST',
+        headers:{
+            'Content-Type': 'application/json', //to send data as json
+        },
+        body: JSON.stringify({
+            banner: 'banner'
+        }),
+        })
+        const data = await response.json() //note
+    }
+
+    return (
+    <div>
+        {
+            !isUserSignedIn?
+             <h1>"Logging you in.."</h1>:
+             <h1>Logged In!</h1>
+
+        }
+    </div> );
+}
+
+export default LoggingIn;

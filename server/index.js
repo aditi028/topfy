@@ -3,8 +3,11 @@ const express = require('express')
 const app = express() 
 const cors = require('cors')
 const needle = require('needle')
-const { TwitterApi } =  require('twitter-api-v2');
+const { TwitterApi } =  require('twitter-api-v2')
 const {LocalStorage} = require("node-localstorage")
+const generateRandomString = require('generate-random-string')
+const querystring = require('node:querystring')
+const axios = require('axios')
 
 localStorage = new LocalStorage('./space');
 localStorage.clear(); 
@@ -84,6 +87,84 @@ app.post('/api/uploadBanner',async (req,res)=>{
   return res.json({status:200})
 })
 
+//spotify endpoints
+
+app.get('/api/spotifylogin',(req,res)=>{
+  const state = generateRandomString(16);
+  const scope = 'user-read-private user-read-email';
+
+  const url = 'https://accounts.spotify.com/authorize?' +
+    querystring.stringify({
+      response_type: 'code',
+      client_id: process.env.SPOTIFY_CLIENT_ID,
+      scope: scope,
+      redirect_uri: process.env.REDIRECT_FROM_SPOTIFY,
+      state: state
+    })
+  
+  return res.json({status:'ok', link:url})
+})
+
+app.post('/api/spotify/callback/',(req,res)=>{
+
+  if(localStorage.getItem('loggedInToSpotify')=='true'){
+    return res.json({status:'200', loggedInToSpotify:'true'})
+  }
+
+  const code  = req.body.code || null
+  const state  = req.body.state || null
+
+  if (state === null) {
+    //handle this
+    alert('state is null');
+    return res.redirect('/#' +
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
+  } else {
+    const url =  'https://accounts.spotify.com/api/token'
+    const authOptions = {
+      method: 'POST',
+      params: querystring.stringify({
+        code: code,
+        redirect_uri: process.env.REDIRECT_FROM_SPOTIFY,
+        grant_type: 'authorization_code',
+      }),
+      headers: {
+        'Authorization': 'Basic ' + (new Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    };
+
+    axios({
+      method: 'post',
+      url: 'https://accounts.spotify.com/api/token',
+      data: querystring.stringify({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.REDIRECT_FROM_SPOTIFY
+      }),
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${new Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+      },
+    })
+      .then(async (response) => {
+        if (response.status === 200) {
+          const { access_token, token_type } = response.data;
+          localStorage.setItem('spotify_access_token', access_token)
+          localStorage.setItem('loggedInToSpotify', 'true')
+          return res.json({status:'200', loggedInToSpotify:'true'})
+        } else {
+          res.send(response);
+        }
+      })
+      .catch(error => {
+        res.send(error);
+      });
+  }
+
+})
 
 app.listen(1337, ()=>{
     console.log("server started on 1337")

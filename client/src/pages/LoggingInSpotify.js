@@ -33,8 +33,10 @@ function LoggingInSpotify() {
             }),
             })
             const data = await response.json()
-            if(data.loggedInToSpotify=='true'){
+            if(data.loggedInToSpotify=='spotifyloggedin'){
                 setSpotifyLoggedIn(true)
+                localStorage.setItem('isSpotifyAuthorized','true')
+                window.location.href = '/'
             }
    }
 

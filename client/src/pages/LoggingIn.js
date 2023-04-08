@@ -5,30 +5,31 @@ function LoggingIn() {
     const [isUserSignedIn, setIsUserSignedIn] = useState(false);
 
     useEffect(()=>{
-        console.log('i fire once');
-        !isUserSignedIn? Login() : uploadBanner()
+        if(!isUserSignedIn)Login()
     },[isUserSignedIn])
 
     async function Login(){
         let search = window.location.search;     
         let params = new URLSearchParams(search);   
         const response = await fetch('http://localhost:1337/api/callback',{
-        method: 'POST',
-        headers:{
-            'Content-Type': 'application/json', //to send data as json
-        },
-        body: JSON.stringify({
-            token: params.get('oauth_token'),
-            verifier: params.get('oauth_verifier')
-        }),
-        })
+                                    method: 'POST',
+                                    headers:{
+                                        'Content-Type': 'application/json', //to send data as json
+                                    },
+                                    body: JSON.stringify({
+                                        token: params.get('oauth_token'),
+                                        verifier: params.get('oauth_verifier')
+                                    }),
+                                })
         const data = await response.json() //note
         //this check is required.
-        if(data.status=='ok'){
-            setIsUserSignedIn(true);
+        if(data.status=='twitterloggedin'){
+            setIsUserSignedIn(true)
+            localStorage.setItem('isTwitterAuthorized','true')
+            window.location.href = '/'
         }
         else{
-            window.alert('please sign in!')
+            window.alert(data.status)
         }
     } 
 

@@ -7,7 +7,6 @@ const { TwitterApi } =  require('twitter-api-v2')
 const {LocalStorage} = require("node-localstorage")
 const generateRandomString = require('generate-random-string')
 const querystring = require('node:querystring')
-const axios = require('axios')
 const session = require('express-session')
 
 localStorage = new LocalStorage('./space')
@@ -122,53 +121,116 @@ app.post('/api/spotify/callback/',(req,res)=>{
   const state  = req.body.state || null
 
   if (state === null) {
+    console.log("null state")
     return res.status(400).send({status:'state null'});
     // return res.redirect('/#' +
     //   querystring.stringify({
     //     error: 'state_mismatch'
     //   }));
   } else {
-    const url =  'https://accounts.spotify.com/api/token'
-    const authOptions = {
+    console.log("fetching auth process")
+    fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
-      params: querystring.stringify({
-        code: code,
-        redirect_uri: process.env.REDIRECT_FROM_SPOTIFY,
-        grant_type: 'authorization_code',
-      }),
       headers: {
-        'Authorization': 'Basic ' + (new Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    };
-
-    axios({
-      method: 'post',
-      url: 'https://accounts.spotify.com/api/token',
-      data: querystring.stringify({
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: process.env.REDIRECT_FROM_SPOTIFY
-      }),
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${new Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + btoa(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET)
       },
-    })
-    .then(async (response) => {
-      if (response.status === 200) {
-        const { access_token, token_type } = response.data;
-        localStorage.setItem('spotify_access_token', access_token)
-        localStorage.setItem('isSpotifyAuthorized', 'true')
-        return res.status(200).send({status:'200', loggedInToSpotify:'spotifyloggedin'})
-      } else {
-        return res.status(400).send({status:response})
-      }
-    })
-    .catch(error => {
-      res.send(error);
-    });
+      body: 'grant_type=authorization_code&code=' + code + '&redirect_uri=' + encodeURIComponent(process.env.REDIRECT_FROM_SPOTIFY)
+      })
+      .then(response => response.json())
+      .then(async data => {
+        console.log(data)
+        // Store the access token and refresh token in local storage or a cookie
+        const accessToken = data.access_token;
+        const refreshToken = data.refresh_token;
+        console.log('Access Token>>', accessToken);
+        console.log('Refresh Token>>', refreshToken);
+        localStorage.setItem('spotify_access_token',accessToken)
+        localStorage.setItem('spotify_refresh_token',refreshToken)
+        localStorage.setItem('spotify_access_token_expiry',Date.now() + (3600 * 1000))
+        const tokenstatus = await refreshAccessToken();
+        console.log("token"+tokenstatus)
+        if(tokenstatus == 200){
+          // refreshAccessTokenIntervals()
+          return res.status(200).send({status:'200', loggedInToSpotify:'spotifyloggedin'})
+        }
+        else{
+          return res.status(400).send({status:'some error'})
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        return res.status(400).send({status:error})
+      });
+    }
+})
+
+function refreshAccessTokenIntervals(){
+  setInterval(refreshAccessToken,  localStorage.getItem('spotify_access_token_expiry'))
+}
+
+function refreshAccessToken() {
+   return fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + btoa(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET)
+    },
+    body: 'grant_type=refresh_token&refresh_token=' + localStorage.getItem('spotify_refresh_token')
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Store the new access token and its expiration time
+    accessToken = data.access_token;
+    expirationTime = Date.now() + (data.expires_in * 1000);
+    console.log('New Access Token:', accessToken);
+    console.log('Expiration Time:', expirationTime);
+    localStorage.setItem('spotify_access_token',accessToken)
+    localStorage.setItem('spotify_access_token_expiry',expirationTime)
+    return 200
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    return 400
+  });
+
+
+}
+
+const EXPIRY_THRESHOLD = 60000; // Refresh token if expiry time is within 60 seconds
+function checkAccessToken() {
+  if (Date.now() > localStorage.getItem('spotify_access_token_expiry') - EXPIRY_THRESHOLD) {
+    refreshAccessToken();
   }
+}
+setInterval(checkAccessToken, 500);
+
+
+
+
+app.get('/api/generateTopfy', async(req,res)=>{
+
+  //generates and uploads to twitter
+  fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('spotify_access_token')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Print the list of songs to the console
+    console.log('Top 50 Songs:', data);
+    const tracks = data.items.map(track=>track.name)
+    console.log('tracks',tracks)
+    //now upload tracks! template is ready already!
+    //token only crashes when I update code and save. I can add extra check to see if tokens are undefined, in that case I need to relogin
+    //or I can change the way I save locally. can use cookies directly instead of server local file.
+    
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+  return res.status(200).send({status:'ok'})
 
 })
 

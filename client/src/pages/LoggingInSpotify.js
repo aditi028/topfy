@@ -6,18 +6,11 @@ function LoggingInSpotify() {
 
     useEffect(()=>{
         if(!spotifyLoggedin){
+            console.log("logging in")
             spotifyLogin();
         }
     },[])
 
-    async function getTopFy(){
-        console.log("gettopfy")
-        // const res = await fetch('https://api.spotify.com/v1/me/top/tracks',{
-        //     method: "GET", headers: { Authorization: `Bearer ${localStorage.getItem('spotify_access_token')}` }
-        // })
-        // const data = await res.json()
-        // console.log(data)
-    }
 
     async function spotifyLogin(){
             let search = window.location.search 
@@ -33,10 +26,14 @@ function LoggingInSpotify() {
             }),
             })
             const data = await response.json()
+            console.log("did log in?",data)
             if(data.loggedInToSpotify=='spotifyloggedin'){
                 setSpotifyLoggedIn(true)
                 localStorage.setItem('isSpotifyAuthorized','true')
                 window.location.href = '/'
+            }
+            else{
+                console.log("some error  with spotify",data)
             }
    }
 

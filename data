@@ -1,0 +1,11 @@
+end points:
+
+'/api/twitterLogin'
+'/api/callback'
+'/api/uploadBanner'
+
+
+'/api/spotifyLogin'
+'/api/spotify/callback/'
+'/api/generateTopfy'
+

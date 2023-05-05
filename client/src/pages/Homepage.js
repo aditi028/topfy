@@ -38,6 +38,13 @@ function Homepage() {
         window.location.assign(data.link)
     }
 
+    async function generateTopfySongs(event){
+        event.preventDefault()
+        console.log("click")
+        const res = await fetch('http://localhost:1337/api/generateTopfy')
+        const data = await res.json()
+    }
+
     return ( 
         <div className="App">
         {
@@ -56,6 +63,13 @@ function Homepage() {
             <form onSubmit={connectToSpotify}>
             <h1>Connect to Spotify</h1>
             <input type="submit" value="Connect to spotify"/>     
+            </form>
+        }
+        {
+            isTwitterAuthorized && isSpotifyAuthorized &&
+            <form onSubmit={generateTopfySongs}>
+            <h3>Generate my topfy</h3>
+            <input type="submit" value="generate & upload"/>     
             </form>
         }
         </div>

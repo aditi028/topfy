@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import config from '../config.js'
 
 function Homepage() {
 
@@ -16,10 +17,10 @@ function Homepage() {
 
     async function connectToTwitter(event){
         event.preventDefault()
-        const res = await fetch('http://localhost:1337/api/twitterLogin')
+        const res = await fetch(config.ENDPOINTS.TWITTER_LOGIN)
         const data = await res.json()
         //redirect to auth link
-        if(data.link==='http://localhost:3000'){
+        if(data.link===config.URLS.LOCALHOST){
             setisTwitterAuthorized(true)
             return
         }
@@ -28,10 +29,10 @@ function Homepage() {
 
     async function connectToSpotify(event){
         event.preventDefault()
-        const res = await fetch('http://localhost:1337/api/spotifyLogin')
+        const res = await fetch(config.ENDPOINTS.SPOTIFY_LOGIN)
         const data = await res.json()
         //redirect to auth link
-        if(data.link==='http://localhost:3000'){
+        if(data.link===config.URLS.LOCALHOST){
             setisSpotifyAuthorized(true)
             return
         }
@@ -41,7 +42,7 @@ function Homepage() {
     async function generateTopfySongs(event){
         event.preventDefault()
         console.log("click")
-        const res = await fetch('http://localhost:1337/api/generateTopfy')
+        const res = await fetch(config.ENDPOINTS.GENERATE_TOPFY)
         const data = await res.json()
     }
 

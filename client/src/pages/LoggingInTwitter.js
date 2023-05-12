@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function LoggingIn() {
+function LoggingInTwitter() {
 
     const [isUserSignedIn, setIsUserSignedIn] = useState(false);
 
@@ -11,7 +11,7 @@ function LoggingIn() {
     async function Login(){
         let search = window.location.search;     
         let params = new URLSearchParams(search);   
-        const response = await fetch('http://localhost:1337/api/callback',{
+        const response = await fetch('http://localhost:1337/api/twitter/callback',{
                                     method: 'POST',
                                     headers:{
                                         'Content-Type': 'application/json', //to send data as json
@@ -33,18 +33,18 @@ function LoggingIn() {
         }
     } 
 
-    async function uploadBanner(){
-        const response = await fetch('http://localhost:1337/api/uploadBanner',{
-        method: 'POST',
-        headers:{
-            'Content-Type': 'application/json', //to send data as json
-        },
-        body: JSON.stringify({
-            banner: 'banner'
-        }),
-        })
-        const data = await response.json() //note
-    }
+    // async function uploadBanner(){
+    //     const response = await fetch('http://localhost:1337/api/uploadBanner',{
+    //     method: 'POST',
+    //     headers:{
+    //         'Content-Type': 'application/json', //to send data as json
+    //     },
+    //     body: JSON.stringify({
+    //         banner: 'banner'
+    //     }),
+    //     })
+    //     const data = await response.json() //note
+    // }
 
     return (
     <div>
@@ -57,4 +57,4 @@ function LoggingIn() {
     </div> );
 }
 
-export default LoggingIn;
+export default LoggingInTwitter;

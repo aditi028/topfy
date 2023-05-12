@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import config from '../config.js'
 
 function LoggingInSpotify() {
 
@@ -6,7 +7,6 @@ function LoggingInSpotify() {
 
     useEffect(()=>{
         if(!spotifyLoggedin){
-            console.log("logging in")
             spotifyLogin();
         }
     },[])
@@ -15,7 +15,7 @@ function LoggingInSpotify() {
     async function spotifyLogin(){
             let search = window.location.search 
             let params = new URLSearchParams(search)
-            const response = await fetch('http://localhost:1337/api/spotify/callback',{
+            const response = await fetch(config.ENDPOINTS.SPOTIFY_CALLBACK,{
             method: 'POST',
             headers:{
                 'Content-Type': 'application/json', //to send data as json
@@ -26,14 +26,10 @@ function LoggingInSpotify() {
             }),
             })
             const data = await response.json()
-            console.log("did log in?",data)
             if(data.loggedInToSpotify=='spotifyloggedin'){
                 setSpotifyLoggedIn(true)
                 localStorage.setItem('isSpotifyAuthorized','true')
                 window.location.href = '/'
-            }
-            else{
-                console.log("some error  with spotify",data)
             }
    }
 

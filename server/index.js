@@ -8,6 +8,7 @@ const {LocalStorage} = require("node-localstorage")
 const generateRandomString = require('generate-random-string')
 const querystring = require('node:querystring')
 const session = require('express-session')
+const jimp = require('jimp')
 
 localStorage = new LocalStorage('./space')
 localStorage.clear(); 
@@ -23,26 +24,26 @@ app.use(express.json()) //we use express.json() as middleware to let express kno
 app.get('/api/twitterLogin', async(req,res)=>{
     if(localStorage.getItem('isTwitterAuthorized')=='true'){
       return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
+    }   
+    const client = new TwitterApi({ 
+          appKey: process.env.CONSUMER_KEY, 
+          appSecret: process.env.CONSUMER_SECRET})
+    try{
+      const authLink = await client.generateAuthLink(process.env.CALLBACK_URL, { linkMode: 'authorize' })
+      const url = authLink.url
+      const oauth_token = authLink.oauth_token
+      const oauth_token_secret = authLink.oauth_token_secret
+      localStorage.setItem('twitter_oauth_token', oauth_token)
+      localStorage.setItem('twitter_oauth_token_secret', oauth_token_secret)
+      return res.status(200).send({status:'ok', link:url}) //returns redirect auth link
     }
-    // if(req.session.istwitterLoggedIn === true){
-    //   return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
-    // }
-    
-    const client = new TwitterApi({ appKey: process.env.CONSUMER_KEY, appSecret: process.env.CONSUMER_SECRET })
-    const authLink = await client.generateAuthLink(process.env.CALLBACK_URL, { linkMode: 'authorize' })
-    const url = authLink.url
-    const oauth_token = authLink.oauth_token
-    const oauth_token_secret = authLink.oauth_token_secret
-    localStorage.setItem('twitter_oauth_token', oauth_token)
-    localStorage.setItem('twitter_oauth_token_secret', oauth_token_secret)
-    // req.session.twitter_oauth_token = oauth_token
-    // req.session.twitter_oauth_token_secret = oauth_token_secret
-    //returns redirect auth link
-    return res.status(200).send({status:'ok', link:url})
+    catch(error){
+      return res.status(403).send({status:'ok', link:'Forbidden Access'}) //returns redirect auth link
+    }
 })
 
 
-app.post('/api/callback', (req, res) => {
+app.post('/api/twitter/callback', (req, res) => {
   const oauth_token  = req.body.token
   const oauth_verifier = req.body.verifier
   const oauth_token_secret  = localStorage.getItem('twitter_oauth_token_secret')
@@ -66,13 +67,40 @@ app.post('/api/callback', (req, res) => {
       // req.session.twitterAccessToken = accessToken
       // req.session.twitterAccessSecret = accessSecret
       //returns login confirmation
+      refreshTwitterAccessToken();
+      console.log("client====="+JSON.stringify(client))
       return res.status(200).send({status:'twitterloggedin'});
     })
     .catch(() => res.status(403).send({status:'Invalid verifier or access tokens!'}));
 
 });
 
-app.post('/api/uploadBanner',async (req,res)=>{
+async function refreshTwitterAccessToken(){
+  
+  const client = new TwitterApi({
+    appKey: process.env.CONSUMER_KEY,
+    appSecret: process.env.CONSUMER_SECRET,
+    accessToken: localStorage.getItem('accessToken'),
+    accessSecret:localStorage.getItem('accessSecret')
+  })
+
+  try {
+    // Get a new bearer token for authentication
+    const bearerToken = await client.getBearerToken();
+    // Invalidate the existing access token and obtain a new one
+    const { data } = await client.invalidateToken();
+    const newAccessToken = data.access_token;
+    const newAccessTokenSecret = data.access_token_secret;
+    localStorage.setItem('accessToken',newAccessToken)
+    localStorage.setItem('accessSecret',newAccessTokenSecret)
+    console.log('Access token refreshed successfully:', newAccessToken);
+    setInterval(refreshTwitterAccessToken,500)
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+  }
+}
+
+async function uploadTwitterBanner(){
   const client = new TwitterApi({
     appKey: process.env.CONSUMER_KEY,
     appSecret: process.env.CONSUMER_SECRET,
@@ -84,7 +112,7 @@ app.post('/api/uploadBanner',async (req,res)=>{
 
   try{
     // Upload from a path (the same sources as .uploadMedia are accepted)
-    await client.v1.updateAccountProfileBanner('./output.jpg', { width: 450, height: 150, offset_left: 20 });
+    await client.v1.updateAccountProfileBanner(process.env.outputImage, { width: 450, height: 150, offset_left: 20 });
     const updatedProfile = await client.currentUser();
     const allBannerSizes = await client.v1.userProfileBannerSizes({ user_id: updatedProfile.id_str });
     console.log('New banner! Max size at URL:', allBannerSizes.sizes['1500x500'].url);
@@ -93,8 +121,8 @@ app.post('/api/uploadBanner',async (req,res)=>{
     console.error('error fetching hometimeline =>', e)
   }
   
-  return res.json({status:200})
-})
+  return 200
+}
 
 //spotify endpoints
 
@@ -121,14 +149,12 @@ app.post('/api/spotify/callback/',(req,res)=>{
   const state  = req.body.state || null
 
   if (state === null) {
-    console.log("null state")
     return res.status(400).send({status:'state null'});
     // return res.redirect('/#' +
     //   querystring.stringify({
     //     error: 'state_mismatch'
     //   }));
   } else {
-    console.log("fetching auth process")
     fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -139,7 +165,6 @@ app.post('/api/spotify/callback/',(req,res)=>{
       })
       .then(response => response.json())
       .then(async data => {
-        console.log(data)
         // Store the access token and refresh token in local storage or a cookie
         const accessToken = data.access_token;
         const refreshToken = data.refresh_token;
@@ -217,14 +242,23 @@ app.get('/api/generateTopfy', async(req,res)=>{
     }
   })
   .then(response => response.json())
-  .then(data => {
+  .then(async data => {
     // Print the list of songs to the console
-    console.log('Top 50 Songs:', data);
     const tracks = data.items.map(track=>track.name)
     console.log('tracks',tracks)
-    //now upload tracks! template is ready already!
-    //token only crashes when I update code and save. I can add extra check to see if tokens are undefined, in that case I need to relogin
-    //or I can change the way I save locally. can use cookies directly instead of server local file.
+    generateImage(tracks)
+    .then((res)=>{
+      if(res==200){
+        console.log("uploading to twitter")
+        const upload_status = uploadTwitterBanner();
+        if(upload_status==200){
+          console.log("uploaded to twitter")
+        }
+      }
+      else{
+        console.log("error creating image. not uploaded to twitter.")
+      }
+    })
     
   })
   .catch(error => {
@@ -233,6 +267,39 @@ app.get('/api/generateTopfy', async(req,res)=>{
   return res.status(200).send({status:'ok'})
 
 })
+
+function generateImage(input_tracks) {
+
+  return jimp.loadFont(jimp.FONT_SANS_32_WHITE).then(
+    (font)=>{
+  
+      return jimp.read(process.env.inputImage)
+      .then(img=>{ 
+        img
+        .print(font,500,45,{text: `${input_tracks[0]}`})
+        .print(font,500,135,{text: `${input_tracks[1]}`})
+        .print(font,500,225,{text: `${input_tracks[2]}`})
+        .print(font,500,315,{text: `${input_tracks[3]}`})
+        .print(font,500,405,{text: `${input_tracks[4]}`})
+        .write(process.env.outputImage);
+        
+      })
+      .then(()=>{
+        console.log("image creation successful. returning 200")
+        setInterval(generateImage,432000000)
+        return 200
+      })
+      .catch(err=>{
+        console.log("error creating image. ",err)
+        return 400
+      })
+      
+    }
+  )
+
+  console.log("did not return 200 yet")
+  
+}
 
 app.listen(1337, ()=>{
     console.log("server started on 1337")

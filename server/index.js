@@ -68,7 +68,6 @@ app.post('/api/twitter/callback', (req, res) => {
       // req.session.twitterAccessSecret = accessSecret
       //returns login confirmation
       refreshTwitterAccessToken();
-      console.log("client====="+JSON.stringify(client))
       return res.status(200).send({status:'twitterloggedin'});
     })
     .catch(() => res.status(403).send({status:'Invalid verifier or access tokens!'}));
@@ -174,7 +173,6 @@ app.post('/api/spotify/callback/',(req,res)=>{
         localStorage.setItem('spotify_refresh_token',refreshToken)
         localStorage.setItem('spotify_access_token_expiry',Date.now() + (3600 * 1000))
         const tokenstatus = await refreshAccessToken();
-        console.log("token"+tokenstatus)
         if(tokenstatus == 200){
           // refreshAccessTokenIntervals()
           return res.status(200).send({status:'200', loggedInToSpotify:'spotifyloggedin'})

@@ -160,7 +160,9 @@ app.post('/api/spotify/callback/',(req,res)=>{
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET)
+        'Authorization': 'Basic ' + Buffer.from(
+          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+        ).toString('base64')
       },
       body: 'grant_type=authorization_code&code=' + code + '&redirect_uri=' + encodeURIComponent(process.env.REDIRECT_FROM_SPOTIFY)
       })
@@ -199,7 +201,9 @@ function refreshAccessToken() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + btoa(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET)
+      'Authorization': 'Basic ' + Buffer.from(
+        `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+      ).toString('base64')
     },
     body: 'grant_type=refresh_token&refresh_token=' + localStorage.getItem('spotify_refresh_token')
   })

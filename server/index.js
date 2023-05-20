@@ -9,6 +9,7 @@ const generateRandomString = require('generate-random-string')
 const querystring = require('node:querystring')
 const session = require('express-session')
 const jimp = require('jimp')
+const path = require('path')
 
 localStorage = new LocalStorage('./space')
 localStorage.clear(); 
@@ -20,6 +21,7 @@ app.use(express.json()) //we use express.json() as middleware to let express kno
 //   resave: false,
 //   saveUninitialized: true
 // }))
+app.use(express.static('static')) //PROD
 
 app.get('/api/twitterLogin', async(req,res)=>{
     if(localStorage.getItem('isTwitterAuthorized')=='true'){
@@ -298,7 +300,13 @@ function generateImage(input_tracks) {
   console.log("did not return 200 yet")
   
 }
+//PROD
+// app.get('*',(req,res)=>{
+//   //send index.html from build folder
+//   res.sendFile(path.join(__dirname,'static/index.html'))
+// })
 
+//local:1337, PROD:80
 app.listen(1337, ()=>{
     console.log("server started on 1337")
 })

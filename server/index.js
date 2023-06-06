@@ -21,17 +21,20 @@ app.use(express.json()) //we use express.json() as middleware to let express kno
 //   resave: false,
 //   saveUninitialized: true
 // }))
-app.use(express.static('static')) //PROD
+// app.use(express.static('static')) //PROD
+
+// Serve images from the 'public' directory
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get('/api/twitterLogin', async(req,res)=>{
     if(localStorage.getItem('isTwitterAuthorized')=='true'){
       return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
     }   
     const client = new TwitterApi({ 
-          appKey: process.env.CONSUMER_KEY, 
-          appSecret: process.env.CONSUMER_SECRET})
+          appKey: process.env.TWITTER_CONSUMER_KEY, 
+          appSecret: process.env.TWITTER_CONSUMER_SECRET})
     try{
-      const authLink = await client.generateAuthLink(process.env.CALLBACK_URL, { linkMode: 'authorize' })
+      const authLink = await client.generateAuthLink(process.env.CALLBACK_URL)
       const url = authLink.url
       const oauth_token = authLink.oauth_token
       const oauth_token_secret = authLink.oauth_token_secret
@@ -40,6 +43,7 @@ app.get('/api/twitterLogin', async(req,res)=>{
       return res.status(200).send({status:'ok', link:url}) //returns redirect auth link
     }
     catch(error){
+      console.log(error)
       return res.status(403).send({status:'ok', link:'Forbidden Access'}) //returns redirect auth link
     }
 })
@@ -54,8 +58,8 @@ app.post('/api/twitter/callback', (req, res) => {
     return res.status(400).send({status:'You denied the app or your session expired!'});
   }
   const client = new TwitterApi({
-    appKey: process.env.CONSUMER_KEY,
-    appSecret: process.env.CONSUMER_SECRET,
+    appKey: process.env.TWITTER_CONSUMER_KEY,
+    appSecret: process.env.TWITTER_CONSUMER_SECRET,
     accessToken: oauth_token,
     accessSecret: oauth_token_secret,
   });
@@ -68,43 +72,45 @@ app.post('/api/twitter/callback', (req, res) => {
       // req.session.istwitterLoggedIn = true;
       // req.session.twitterAccessToken = accessToken
       // req.session.twitterAccessSecret = accessSecret
+      console.log("token: ",accessToken)
+      console.log("secret:",accessSecret)
       //returns login confirmation
-      refreshTwitterAccessToken();
+      // refreshTwitterAccessToken();
       return res.status(200).send({status:'twitterloggedin'});
     })
     .catch(() => res.status(403).send({status:'Invalid verifier or access tokens!'}));
 
 });
 
-async function refreshTwitterAccessToken(){
+// async function refreshTwitterAccessToken(){
   
-  const client = new TwitterApi({
-    appKey: process.env.CONSUMER_KEY,
-    appSecret: process.env.CONSUMER_SECRET,
-    accessToken: localStorage.getItem('accessToken'),
-    accessSecret:localStorage.getItem('accessSecret')
-  })
+//   const client = new TwitterApi({
+//     appKey: process.env.TWITTER_CONSUMER_KEY,
+//     appSecret: process.env.TWITTER_CONSUMER_SECRET,
+//     accessToken: localStorage.getItem('accessToken'),
+//     accessSecret:localStorage.getItem('accessSecret')
+//   })
 
-  try {
-    // Get a new bearer token for authentication
-    const bearerToken = await client.getBearerToken();
-    // Invalidate the existing access token and obtain a new one
-    const { data } = await client.invalidateToken();
-    const newAccessToken = data.access_token;
-    const newAccessTokenSecret = data.access_token_secret;
-    localStorage.setItem('accessToken',newAccessToken)
-    localStorage.setItem('accessSecret',newAccessTokenSecret)
-    console.log('Access token refreshed successfully:', newAccessToken);
-    setInterval(refreshTwitterAccessToken,500)
-  } catch (error) {
-    console.error('Error refreshing access token:', error);
-  }
-}
+//   try {
+//     // Get a new bearer token for authentication
+//     const bearerToken = await client.getBearerToken();
+//     // Invalidate the existing access token and obtain a new one
+//     const { data } = await client.invalidateToken();
+//     const newAccessToken = data.access_token;
+//     const newAccessTokenSecret = data.access_token_secret;
+//     localStorage.setItem('accessToken',newAccessToken)
+//     localStorage.setItem('accessSecret',newAccessTokenSecret)
+//     console.log('Access token refreshed successfully:', newAccessToken);
+//     setInterval(refreshTwitterAccessToken,500)
+//   } catch (error) {
+//     console.error('Error refreshing access token:', error);
+//   }
+// }
 
 async function uploadTwitterBanner(){
   const client = new TwitterApi({
-    appKey: process.env.CONSUMER_KEY,
-    appSecret: process.env.CONSUMER_SECRET,
+    appKey: process.env.TWITTER_CONSUMER_KEY,
+    appSecret: process.env.TWITTER_CONSUMER_SECRET,
     // accessToken: req.session.twitterAccessToken,
     // accessSecret: req.session.twitterAccessSecret
     accessToken: localStorage.getItem('accessToken'),
@@ -128,7 +134,7 @@ async function uploadTwitterBanner(){
 //spotify endpoints
 
 app.get('/api/spotifyLogin',(req,res)=>{
-  if(localStorage.getItem('isSpotifyAuthorized')=='true'){
+  if(localStorage.getItem('isSpotifyAuthorized')==='true'){
     return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
   }
   const state = generateRandomString(16);
@@ -173,6 +179,7 @@ app.post('/api/spotify/callback/',(req,res)=>{
         const refreshToken = data.refresh_token;
         console.log('Access Token>>', accessToken);
         console.log('Refresh Token>>', refreshToken);
+        localStorage.setItem('isSpotifyAuthorized','true')
         localStorage.setItem('spotify_access_token',accessToken)
         localStorage.setItem('spotify_refresh_token',refreshToken)
         localStorage.setItem('spotify_access_token_expiry',Date.now() + (3600 * 1000))
@@ -240,35 +247,30 @@ setInterval(checkAccessToken, 500);
 app.get('/api/generateTopfy', async(req,res)=>{
 
   //generates and uploads to twitter
-  fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
-    headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('spotify_access_token')
-    }
-  })
-  .then(response => response.json())
-  .then(async data => {
-    // Print the list of songs to the console
-    const tracks = data.items.map(track=>track.name)
-    console.log('tracks',tracks)
-    generateImage(tracks)
-    .then((res)=>{
-      if(res==200){
-        console.log("uploading to twitter")
-        const upload_status = uploadTwitterBanner();
-        if(upload_status==200){
-          console.log("uploaded to twitter")
-        }
-      }
-      else{
-        console.log("error creating image. not uploaded to twitter.")
-      }
-    })
-    
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
-  return res.status(200).send({status:'ok'})
+  const tracks_data = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
+                      headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('spotify_access_token')
+                      }
+                    })
+                  .then(response => response.json())
+                  .then(data => {
+                      if(!data.items)return 400
+                      const tracks = data.items.map(track=>track.name)
+                      return generateImage(tracks)
+                      .then((res)=>{
+                        if(res==200){
+                          return 200
+                        }
+                        else{
+                          return 400
+                        }
+                      })    
+                  })
+                  .catch(error => {
+                      return 400
+                  });
+
+  return res.status(200).send({status:tracks_data})
 
 })
 
@@ -290,7 +292,7 @@ function generateImage(input_tracks) {
       })
       .then(()=>{
         console.log("image creation successful. returning 200")
-        setInterval(generateImage,432000000)
+        // setInterval(generateImage,432000000)
         return 200
       })
       .catch(err=>{
@@ -304,6 +306,18 @@ function generateImage(input_tracks) {
   console.log("did not return 200 yet")
   
 }
+
+app.get('/api/spotifyLogout',(req,res)=>{
+  if(localStorage.getItem('isSpotifyAuthorized')==='true'){
+    localStorage.setItem('isSpotifyAuthorized','false')
+    localStorage.removeItem('spotify_access_token')
+    localStorage.removeItem('spotify_refresh_token')
+    localStorage.removeItem('spotify_access_token_expiry')
+    return res.status(200).send({status:200})
+  }
+  return res.status(400).send({status:400})
+})
+
 //PROD
 // app.get('*',(req,res)=>{
 //   //send index.html from build folder

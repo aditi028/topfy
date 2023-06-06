@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import config from '../config.js'
+import styles from './logginginspotify.module.css'
 
 function LoggingInSpotify() {
 
@@ -34,12 +35,12 @@ function LoggingInSpotify() {
    }
 
     return ( 
-    <div>
+    <div className={styles.container}>
         {
         !spotifyLoggedin?
-        <h1>Logging you into Spotify</h1>
+        <h1>Logging you into Spotify...</h1>
         :
-        <h1>Logged in to Spotify</h1>
+        <h1>Logged in to Spotify!</h1>
         }
     </div> );
 }

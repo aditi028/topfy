@@ -6,8 +6,11 @@ const config = {
     ENDPOINTS: {
       TWITTER_LOGIN :'http://localhost:1337/api/twitterLogin',
       SPOTIFY_LOGIN : 'http://localhost:1337/api/spotifyLogin',
+      SPOTIFY_LOGOUT: 'http://localhost:1337/api/spotifyLogout',
       SPOTIFY_CALLBACK : 'http://localhost:1337/api/spotify/callback',
+      TWITTER_CALLBACK: 'http://localhost:1337/api/twitter/callback',
       GENERATE_TOPFY : 'http://localhost:1337/api/generateTopfy',
+      TRACKS_IMAGE_ASSET : 'http://localhost:1337/assets/output.png'
     }
  }
  

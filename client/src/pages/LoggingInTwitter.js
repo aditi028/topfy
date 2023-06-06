@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import config from "../config";
 
 function LoggingInTwitter() {
 
@@ -11,7 +12,7 @@ function LoggingInTwitter() {
     async function Login(){
         let search = window.location.search;     
         let params = new URLSearchParams(search);   
-        const response = await fetch('http://localhost:1337/api/twitter/callback',{
+        const response = await fetch(config.ENDPOINTS.TWITTER_CALLBACK,{
                                     method: 'POST',
                                     headers:{
                                         'Content-Type': 'application/json', //to send data as json
@@ -22,6 +23,7 @@ function LoggingInTwitter() {
                                     }),
                                 })
         const data = await response.json() //note
+        console.log("data=>",data)
         //this check is required.
         if(data.status=='twitterloggedin'){
             setIsUserSignedIn(true)
@@ -32,19 +34,6 @@ function LoggingInTwitter() {
             window.alert(data.status)
         }
     } 
-
-    // async function uploadBanner(){
-    //     const response = await fetch('http://localhost:1337/api/uploadBanner',{
-    //     method: 'POST',
-    //     headers:{
-    //         'Content-Type': 'application/json', //to send data as json
-    //     },
-    //     body: JSON.stringify({
-    //         banner: 'banner'
-    //     }),
-    //     })
-    //     const data = await response.json() //note
-    // }
 
     return (
     <div>

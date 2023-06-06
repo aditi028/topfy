@@ -1,0 +1,111 @@
+.App{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav{
+    width: 98vw;
+    height: 8vh;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+}
+
+.navItems{
+    height: 7.5vh;
+    width: 33vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px solid blue; */
+}
+
+.title{
+    font-size: 4vh;
+    font-weight: 400;
+    line-height: 8vh;
+}
+
+.titleTop{
+    color: black;
+}
+
+.titleFy{
+    color: #1DB954;
+}
+
+.logoutWrapper{
+    height: 7vh;
+    width: 11vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px solid red; */
+}
+
+.logoutButton{
+    width: auto;
+    height: 5vh;
+    background-color: white;
+    border-radius: 50%;
+    border-color: white;
+    line-height: 8vh;
+    background-position: center;
+    cursor: pointer;
+}
+
+
+.logoutText{
+    width: auto;
+    line-height: auto;
+    font-weight: 200;
+    cursor: pointer;
+}
+
+.container{
+    height: 85vh;
+    width: 99vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.login{
+    height: 5vh;
+    width: 20vw;
+    position: absolute;
+    top: 15%;
+    left: 40%;
+    border: 1px solid #1DB954;
+    border-radius: 5px;
+    background-color: white;
+    font-weight: 300;
+    font-size: 2vh;
+    cursor: pointer;
+}
+
+.tracksContainer{
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tracksImage{
+    width: 60%;
+    height: 40%;
+    border: 1px;
+    background-size: cover;
+    background-position: center;
+}
+

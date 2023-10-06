@@ -241,7 +241,7 @@ setInterval(checkAccessToken, 500);
 
 
 
-app.post('/api/generateTopfy', async(req,res)=>{
+app.get('/api/generateTopfy', async(req,res)=>{
 
   //generates and uploads to twitter
   fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
@@ -254,25 +254,26 @@ app.post('/api/generateTopfy', async(req,res)=>{
     // Print the list of songs to the console
     const tracks = data.items.map(track=>track.name)
     console.log('tracks',tracks)
-    generateImage(tracks)
-    .then((res)=>{
-      if(res==200){
-        console.log("uploading to twitter")
-        const upload_status = uploadTwitterBanner();
-        if(upload_status==200){
-          console.log("uploaded to twitter")
-        }
-      }
-      else{
-        console.log("error creating image. not uploaded to twitter.")
-      }
-    })
+    return res.status(200).send({status:'ok', songsdata:tracks})
+    // generateImage(tracks)
+    // .then((res)=>{
+    //   if(res==200){
+    //     console.log("uploading to twitter")
+    //     const upload_status = uploadTwitterBanner();
+    //     if(upload_status==200){
+    //       console.log("uploaded to twitter")
+    //     }
+    //   }
+    //   else{
+    //     console.log("error creating image. not uploaded to twitter.")
+    //   }
+    // })
     
   })
   .catch(error => {
     console.error('Error:', error);
   });
-  return res.status(200).send({status:'ok', data:tracks})
+
 
 })
 

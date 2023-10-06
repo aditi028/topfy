@@ -3,6 +3,7 @@ import config from '../config.js'
 
 function Homepage() {
 
+    const [topfy_list, set_topfy_list] = useState(null)
     // const [isTwitterAuthorized, setisTwitterAuthorized] = useState(false)
     const [isSpotifyAuthorized, setisSpotifyAuthorized] = useState(false)
     
@@ -44,8 +45,9 @@ function Homepage() {
         console.log("generating songs")
         const res = await fetch(config.ENDPOINTS.GENERATE_TOPFY)
         const data = await res.json()
-        console.log("status ",data.status)
-       data.tracks.map(track=>console.log(track.name))
+        // console.log("status ",data.status)
+    //    console.log(data.songsdata)
+       set_topfy_list(data.songsdata);
     }
 
     return ( 
@@ -72,8 +74,18 @@ function Homepage() {
              isSpotifyAuthorized &&
             <form onSubmit={generateTopfySongs}>
             <h3>Generate my topfy</h3>
-            <input type="submit" value="generate & upload"/>     
+            <input type="submit" value="show my topfy"/>     
             </form>
+        }
+        {
+            topfy_list!=null &&
+            <div>
+                <ul>
+                    {topfy_list.map((item, index) => (
+                        <li key={index}>{item}</li>
+                    ))}
+                </ul>
+            </div>    
         }
         </div>
      );

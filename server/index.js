@@ -23,6 +23,7 @@ app.use(express.json()) //we use express.json() as middleware to let express kno
 // }))
 app.use(express.static('static')) //PROD
 
+/** 
 app.get('/api/twitterLogin', async(req,res)=>{
     if(localStorage.getItem('isTwitterAuthorized')=='true'){
       return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
@@ -125,9 +126,12 @@ async function uploadTwitterBanner(){
   return 200
 }
 
+*/
+
 //spotify endpoints
 
 app.get('/api/spotifyLogin',(req,res)=>{
+  console.log("hit spotify login endpoint")
   if(localStorage.getItem('isSpotifyAuthorized')=='true'){
     return res.status(200).send({status:'ok', link:process.env.LOCALHOST})
   }
@@ -145,7 +149,7 @@ app.get('/api/spotifyLogin',(req,res)=>{
 })
 
 app.post('/api/spotify/callback/',(req,res)=>{
-
+  console.log("hit spotify login callback endpoint")
   const code  = req.body.code || null
   const state  = req.body.state || null
 
@@ -311,6 +315,6 @@ function generateImage(input_tracks) {
 // })
 
 //local:1337, PROD:80
-app.listen(1337, ()=>{
-    console.log("server started on 1337")
+app.listen(3001, ()=>{
+    console.log("server started on 3001")
 })

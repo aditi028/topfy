@@ -4,7 +4,7 @@
 
 //prod
 const server = "https://topfy-server.onrender.com/"
-const client = "https://topfysongs.netlify.app/"
+const client = "https://652051a8640d0f2a631d303f--topfysongs.netlify.app/"
 
 const config = {
     URLS: {

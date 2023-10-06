@@ -41,9 +41,11 @@ function Homepage() {
 
     async function generateTopfySongs(event){
         event.preventDefault()
-        console.log("click")
+        console.log("generating songs")
         const res = await fetch(config.ENDPOINTS.GENERATE_TOPFY)
         const data = await res.json()
+        console.log("status ",data.status)
+       data.tracks.map(track=>console.log(track.name))
     }
 
     return ( 

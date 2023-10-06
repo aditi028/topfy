@@ -175,8 +175,8 @@ app.post('/api/spotify/callback/',(req,res)=>{
         // Store the access token and refresh token in local storage or a cookie
         const accessToken = data.access_token;
         const refreshToken = data.refresh_token;
-        console.log('Access Token>>', accessToken);
-        console.log('Refresh Token>>', refreshToken);
+        // console.log('Access Token>>', accessToken);
+        // console.log('Refresh Token>>', refreshToken);
         localStorage.setItem('spotify_access_token',accessToken)
         localStorage.setItem('spotify_refresh_token',refreshToken)
         localStorage.setItem('spotify_access_token_expiry',Date.now() + (3600 * 1000))
@@ -241,7 +241,7 @@ setInterval(checkAccessToken, 500);
 
 
 
-app.get('/api/generateTopfy', async(req,res)=>{
+app.post('/api/generateTopfy', async(req,res)=>{
 
   //generates and uploads to twitter
   fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
@@ -272,7 +272,7 @@ app.get('/api/generateTopfy', async(req,res)=>{
   .catch(error => {
     console.error('Error:', error);
   });
-  return res.status(200).send({status:'ok'})
+  return res.status(200).send({status:'ok', data:tracks})
 
 })
 

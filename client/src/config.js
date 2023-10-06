@@ -1,10 +1,10 @@
-// dev
-const server = "http://localhost:3001/"
-const client = "http://localhost:3000/"
+// // dev
+// const server = "http://localhost:3001/"
+// const client = "http://localhost:3000/"
 
-// //prod
-// const server = "https://topfy-server.onrender.com/"
-// const client = "https://topfysongs.netlify.app/"
+//prod
+const server = "https://topfy-server.onrender.com/"
+const client = "https://topfysongs.netlify.app/"
 
 const config = {
     URLS: {

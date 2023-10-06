@@ -7,9 +7,10 @@ function LoggingInSpotify() {
 
     useEffect(()=>{
         if(!spotifyLoggedin){
+            console.log("not logged in")
             spotifyLogin();
         }
-    },[])
+    })
 
 
     async function spotifyLogin(){

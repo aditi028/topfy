@@ -1,13 +1,21 @@
+//dev
+// const server = "http://localhost:3001"
+// const client = "http://localhost:3000"
+
+//prod
+const server = "https://topfy-server.onrender.com/"
+const client = "https://topfysongs.netlify.app/"
+
 const config = {
     URLS: {
-       LOCALHOST: 'http://localhost:3000',
+       LOCALHOST: client,
 
     },
     ENDPOINTS: {
-      TWITTER_LOGIN :'http://localhost:1337/api/twitterLogin',
-      SPOTIFY_LOGIN : 'http://localhost:1337/api/spotifyLogin',
-      SPOTIFY_CALLBACK : 'http://localhost:1337/api/spotify/callback',
-      GENERATE_TOPFY : 'http://localhost:1337/api/generateTopfy',
+      TWITTER_LOGIN : `${server}/api/twitterLogin`,
+      SPOTIFY_LOGIN : `${server}api/spotifyLogin`,
+      SPOTIFY_CALLBACK : `${server}/api/spotify/callback`,
+      GENERATE_TOPFY : `${server}/api/generateTopfy`,
     }
  }
  

@@ -8,8 +8,11 @@ function TopfyList(props) {
             </div> */}
             <div className={styles.topfy_list_heading}>
                 <img src={madeForYou} className={styles.topfy_list_headingImage}></img>
-                <h1 className={styles.topfy_list_headingText}>Topfy</h1>
-                <h2 className={styles.topfy_list_headingsubText}your top five spotify songs for the week></h2>
+                <div className={styles.topfy_list_headingTextContent}>
+                    <h1 className={styles.topfy_list_headingText}>Topfy</h1>
+                    <h2 className={styles.topfy_list_headingsubText}>your top five spotify songs for the week</h2>
+                </div>
+                
             </div>
             <div className={styles.topfylist_container}>
                 {props.topfy.map((item, index) => (

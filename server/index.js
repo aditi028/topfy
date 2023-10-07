@@ -244,17 +244,29 @@ setInterval(checkAccessToken, 500);
 app.get('/api/generateTopfy', async(req,res)=>{
 
   //generates and uploads to twitter
-  fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
+  fetch('https://api.spotify.com/v1/me/top/tracks?limit=5', {
     headers: {
       'Authorization': 'Bearer ' + localStorage.getItem('spotify_access_token')
     }
   })
   .then(response => response.json())
   .then(async data => {
-    // Print the list of songs to the console
-    const tracks = data.items.map(track=>track.name)
-    console.log('tracks',tracks)
-    return res.status(200).send({status:'ok', songsdata:tracks})
+    try{
+      // console.log('data',data.items)
+      const tracks = data.items.map(track=>{ 
+          return {
+            track_name : track.name,
+            track_album: track.album.name,
+            track_image : track.album.images
+          }
+        }
+        )
+      // console.log('tracks',tracks)
+      return res.status(200).send({status:'ok', songsdata:tracks})
+    }catch(error){
+      return res.status(400).send({status:'fail', songsdata:null})
+    }
+
     // generateImage(tracks)
     // .then((res)=>{
     //   if(res==200){

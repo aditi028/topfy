@@ -1,0 +1,71 @@
+/* .topfylist_header{
+    height: 5vh;
+    width: auto;
+    background-color: #121212;
+    background-image: linear-gradient(180deg, #121212 0%, #121212 2%, #0f4147 100%);
+} */
+
+
+
+.topfy_list_heading{
+    height: 40vh;
+    width: auto;
+    border-top-right-radius: 2%;
+    border-top-left-radius: 2%;
+    background-color: #1f9ba8;
+    background-image: linear-gradient(180deg, #1f9ba8 0%, #1c8d99 74%, #166c75 100%);
+    /* flex props */
+    display: flex;
+    flex-direction: row;
+    column-gap: 2rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 5%;
+}
+
+.topfy_list_headingText{
+    padding-top:7%;
+    font-size: 4rem;
+}
+
+.topfy_list_headingsubText{
+    font-size: 2rem;
+}
+
+.topfy_list_headingImage{
+    height: 30vh;
+    width: auto;
+    border-radius: 10%;
+}
+
+.topfylist_container{
+    height: 50vh;
+    background-color: #0e4349;
+    background-image: linear-gradient(180deg, #0e4349 0%, #0f3b3f 25%, #102e32 50%, #111819 75% , #121212 100%);
+}
+
+.topfylist_li{
+    list-style-type: none; /* Remove bullet points */
+    padding: 0%; /* Remove padding */
+    margin: 0; /* Remove margin */
+    height: 20%;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 5%;
+
+}
+
+.topfylist_li_song{
+    font-size: 1.5 rem;
+}
+
+
+.topfylist_li_songInfo{
+    font-size: 1 rem;
+    opacity: 70%;
+}

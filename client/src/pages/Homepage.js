@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react"
 import config from '../config.js'
+import TopfyList from "../component/TopfyList.js"
+import styles from "./homepage.module.css"
+import people from "../assets/people-min.jpg"
 
 function Homepage() {
 
@@ -51,42 +54,44 @@ function Homepage() {
     }
 
     return ( 
-        <div className="App">
-        {/* {
-            isTwitterAuthorized?
-            <h1>Twitter Connected</h1>
-            :
-            <form onSubmit={connectToTwitter}>
-            <h1>Connect to Twitter</h1>
-            <input type="submit" value="Connect to twitter"/>     
-            </form>
-        } */}
-        {
-            isSpotifyAuthorized?
-            <h1>Spotify connected</h1>
-            :
-            <form onSubmit={connectToSpotify}>
-            <h1>Connect to Spotify</h1>
-            <input type="submit" value="Connect to spotify"/>     
-            </form>
-        }
-        {
-             isSpotifyAuthorized &&
-            <form onSubmit={generateTopfySongs}>
-            <h3>Generate my topfy</h3>
-            <input type="submit" value="show my topfy"/>     
-            </form>
-        }
-        {
-            topfy_list!=null &&
-            <div>
-                <ul>
-                    {topfy_list.map((item, index) => (
-                        <li key={index}>{item}</li>
-                    ))}
-                </ul>
-            </div>    
-        }
+        <div className={styles.appcontainer}>
+            <div className={styles.sideHeader}>
+            <h1 className={styles.userName}>Welcome, mate!</h1>
+            
+           <div>
+            {
+                        isSpotifyAuthorized?
+                            <form onSubmit={generateTopfySongs}>
+                            <input type="submit" value="show my topfy" className={styles.showButton}/>     
+                            </form>
+                        :
+                            <form onSubmit={connectToSpotify}>
+                            <input type="submit" value="Connect to spotify" className={styles.showButton}/>     
+                            </form>
+                }
+           </div>
+           <img src={people} className={styles.sideHeaderImg}></img>
+
+            </div>
+
+            <div className={styles.content}>
+                {/* {
+                    isTwitterAuthorized?
+                    <h1>Twitter Connected</h1>
+                    :
+                    <form onSubmit={connectToTwitter}>
+                    <h1>Connect to Twitter</h1>
+                    <input type="submit" value="Connect to twitter"/>     
+                    </form>
+                } */}
+                
+                {
+                    topfy_list!=null ?
+                    <TopfyList topfy={topfy_list}/>  :
+                    <h1 className={styles.contentShowTopfy}>click on show topfy!</h1>
+                }
+            </div>
+        
         </div>
      );
 }

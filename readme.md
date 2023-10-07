@@ -6,4 +6,4 @@ Login with spotify on topfy app and find out your top five songs!
 
 app link : https://topfysongs.netlify.app/
 
-![Checkout app : ](./app_screenshot.png)
+![Checkout app : ](./live_app_screenshot.png)

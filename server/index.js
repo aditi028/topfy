@@ -265,6 +265,7 @@ try{
       // console.log('tracks',tracks)
       return res.status(200).send({status:'ok', songsdata:tracks})
     }catch(error){
+      console.error('Caught Error:', error);
       return res.status(400).send({status:'fail', songsdata:null})
     }
 
@@ -284,12 +285,14 @@ try{
     
   })
   .catch(error => {
-    console.error('Error:', error);
+    console.error('Caught Error:', error);
+    return res.status(400).send({status:'fail', songsdata:null})
   });
 
 }
 catch(error){
-  return res.status(400).send({status:error, songsdata:null})
+  console.error('Caught Error:', error);
+  return res.status(400).send({status:"fail", songsdata:null})
 }
 
 })

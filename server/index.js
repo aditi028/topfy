@@ -244,6 +244,7 @@ setInterval(checkAccessToken, 500);
 app.get('/api/generateTopfy', async(req,res)=>{
 
   //generates and uploads to twitter
+try{
   fetch('https://api.spotify.com/v1/me/top/tracks?limit=5', {
     headers: {
       'Authorization': 'Bearer ' + localStorage.getItem('spotify_access_token')
@@ -286,6 +287,10 @@ app.get('/api/generateTopfy', async(req,res)=>{
     console.error('Error:', error);
   });
 
+}
+catch(error){
+  return res.status(400).send({status:error, songsdata:null})
+}
 
 })
 
